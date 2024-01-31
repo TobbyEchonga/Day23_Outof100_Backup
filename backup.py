@@ -1,20 +1,39 @@
+import os
+import shutil
+import schedule
+import time
 
-# Backup Script in Python
+def backup_files(source_path, destination_path):
+    try:
+        # Create a timestamped backup folder
+        backup_folder = f"backup_{time.strftime('%Y%m%d_%H%M%S')}"
+        backup_path = os.path.join(destination_path, backup_folder)
+        os.makedirs(backup_path)
+        print(f"Backup created: {backup_path}")
 
-This Python script performs backups.
+        # Copy files/directories from source to backup
+        for item in os.listdir(source_path):
+            source_item = os.path.join(source_path, item)
+            destination_item = os.path.join(backup_path, item)
 
-## Usage
+            if os.path.isdir(source_item):
+                shutil.copytree(source_item, destination_item)
+            else:
+                shutil.copy2(source_item, destination_item)
 
-- Run `backup.py` in your Python environment to initiate the backup process.
+        print("Backup completed successfully")
 
-## Note
+    except Exception as e:
+        print(f"Error during backup: {e}")
 
-- Customize the script to define backup sources and destinations.
-- Ensure appropriate permissions and configurations for the backup process.
+# Example Usage
+if __name__ == "__main__":
+    source_directory = "/path/to/your/source"
+    destination_directory = "/path/to/your/backup"
 
-## Additional Steps
+    # Schedule a backup every day at 2 AM
+    schedule.every().day.at("02:00").do(backup_files, source_directory, destination_directory)
 
-- Schedule the script to run periodically using task scheduling tools.
-- Implement error handling and logging for a robust backup system.
-
-**Important:** Review and test the script thoroughly before using it in a production environment.
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
